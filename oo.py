@@ -5,7 +5,10 @@ if __name__ == '__main__':
     import base64
     import os
     import sys
-    import tempfile
+    try:
+        import cStringIO as StringIO
+    except ImportError:
+        import StringIO
     import time
 
     if sys.version_info[:2] <  (2, 6):
@@ -19,16 +22,15 @@ if __name__ == '__main__':
         sys.stderr.write('PyGame 1.8 or more recent required\n')
         sys.exit(1)
 
-    temp = tempfile.NamedTemporaryFile(suffix='.wav', delete=False)
-    name = temp.name
+    temp = StringIO.StringIO()
     try:
         temp.write(base64.b64decode(moo))
-        temp.close()
+        temp.seek(0)
     
         pygame.mixer.init()
-        s = pygame.mixer.Sound(name)
+        s = pygame.mixer.Sound(temp)
         c = s.play()
         while c.get_busy():
             time.sleep(0.1)
     finally:
-        os.remove(name)
+        temp.close()
